@@ -1,26 +1,36 @@
 const Discord = require('discord.js');
 var http = require('http');
 var fs = require('fs');
+const dotenv = require('dotenv').config();
 const Sequelize = require('sequelize');
 const { Client, MessageAttachment } = require('discord.js');
 const sequelize = new Sequelize('discord_db', 'postgres', 'root', {
   host: '127.0.0.1',
   dialect: 'postgres',
   logging: false,
-  // SQLite only
-  //   storage: 'database.sqlite',
 });
 const Names = sequelize.define('names', {
   name: {
     type: Sequelize.STRING,
   },
+  type: {
+    type: Sequelize.STRING,
+  },
+  prev: {
+    type: Sequelize.STRING,
+  },
+  absent: {
+    type: Sequelize.BOOLEAN,
+  },
 });
 Names.sync();
 // add a name func
-const add = async (name) => {
+const add = async (name, type) => {
   try {
     const addName = await Names.create({
       name: name,
+      type: type,
+      absent: false,
     });
     // return message.reply(`Tag ${tag.name} added.`);
   } catch (e) {
@@ -28,10 +38,10 @@ const add = async (name) => {
   }
 };
 // add a list of names func
-const bulkAdd = async (names) => {
+const bulkAdd = async (names, type) => {
   try {
     names = names.split(',');
-    names = names.map((name) => ({ name: name }));
+    names = names.map((name) => ({ name: name, type: type, absent: false }));
     const addNames = await Names.bulkCreate(names);
     // return message.reply(`Tag ${tag.name} added.`);
   } catch (e) {
@@ -49,8 +59,17 @@ const del = async (name) => {
     // return message.reply('Something went wrong with adding a tag.');
   }
 };
-
-// const file = fs.createWriteStream('file.xlsx');
+// abs func
+const abs = async (name) => {
+  try {
+    const findName = await Names.findOne({ where: { name: name } });
+    findName.absent = true;
+    const absName = await findName.update({ absent: true });
+    // return message.reply(`Tag ${tag.name} added.`);
+  } catch (e) {
+    // return message.reply('Something went wrong with adding a tag.');
+  }
+};
 
 const client = new Client();
 client.on('ready', () => {
@@ -75,23 +94,40 @@ client.on('message', (message) => {
   }
 });
 
-// adding a name
+// adding a student
 client.on('message', (msg) => {
-  if (msg.content.includes('!addName')) {
-    const name = msg.content.split('!addName ')[1];
-    add(name);
-    return msg.reply(`Name ${name} added.`);
+  if (msg.content.includes('!addStudent')) {
+    const name = msg.content.split('!addStudent ')[1];
+    add(name, 'student');
+    return msg.reply(`Student ${name} added.`);
   }
 });
-// adding list of names
+// adding an instructor
 client.on('message', (msg) => {
-  if (msg.content.includes('!bulkAdd')) {
-    const names = msg.content.split('!bulkAdd ')[1];
-    bulkAdd(names);
-    return msg.reply(`Names added.`);
+  if (msg.content.includes('!addInstructor')) {
+    const name = msg.content.split('!addInstructor ')[1];
+    add(name, 'instructors');
+    return msg.reply(`Instructor ${name} added.`);
   }
 });
-// adding list of names
+// adding list of Students
+client.on('message', (msg) => {
+  if (msg.content.includes('!bulkStudents')) {
+    const names = msg.content.split('!bulkStudents ')[1];
+    bulkAdd(names, 'student');
+    return msg.reply(`Students added.`);
+  }
+});
+// adding list of Instructors
+client.on('message', (msg) => {
+  if (msg.content.includes('!bulkInstructors')) {
+    const names = msg.content.split('!bulkInstructors ')[1];
+    bulkAdd(names, 'instructors');
+    return msg.reply(`Instructors added.`);
+  }
+});
+
+// clearing the db
 client.on('message', (msg) => {
   if (msg.content.includes('!clearDb')) {
     Names.sync({ force: true });
@@ -105,6 +141,14 @@ client.on('message', (msg) => {
     const name = msg.content.split('!removeName ')[1];
     del(name);
     return msg.reply(`Name ${name} deleted.`);
+  }
+});
+// absent a name
+client.on('message', (msg) => {
+  if (msg.content.includes('!absent')) {
+    const name = msg.content.split('!absent ')[1];
+    abs(name);
+    return msg.reply(`Student ${name} Absent.`);
   }
 });
 // listing names
@@ -123,6 +167,10 @@ client.on('message', async (msg) => {
   if (msg.content.includes('!pairs')) {
     let names = await Names.findAll({
       attributes: ['name'],
+      where: {
+        type: 'student',
+        absent: false,
+      },
     });
     names = names.map((name) => name.name);
     names = names.sort((a, b) => 0.5 - Math.random());
@@ -139,37 +187,97 @@ client.on('message', async (msg) => {
       } \`\`\``;
     });
 
-    return msg.reply(` ${names.toString()}. `);
+    return msg.reply(` ${names.join(' ')} `);
   }
 });
 
 // creating Iod
 client.on('message', async (msg) => {
   if (msg.content.includes('!iod')) {
-    let names = await Names.findAll({
-      attributes: ['name'],
+    let fullNames = await Names.findAll({
+      attributes: ['name', 'prev'],
+      where: {
+        type: 'student',
+        absent: false,
+      },
+      order: sequelize.random(),
     });
-    names = names.map((name) => name.name);
-    names = names.sort((a, b) => 0.5 - Math.random());
+    let instructors = await Names.findAll({
+      attributes: ['name'],
+      where: {
+        type: 'instructors',
+      },
+    });
+
+    names = fullNames.map((name) => name.name);
+    instructors = instructors.map((name) => name.name);
+    const tempStudent = await Names.findOne({
+      where: {
+        type: 'student',
+      },
+    });
     let result = [];
-    for (let i = 3; i > 0; i--) {
-      result.push(names.splice(0, Math.ceil(names.length / i)));
+    let instructorsMap = {};
+    instructors.forEach((ins) => (instructorsMap[ins] = []));
+    if (
+      tempStudent.prev === null ||
+      tempStudent.prev.split(',').length === instructors.length
+    ) {
+      for (let i = instructors.length; i > 0; i--) {
+        result.push(names.splice(0, Math.ceil(names.length / i)));
+      }
+      let x = -1;
+      const allIns = [];
+      instructors = await instructors.map(async (ins) => {
+        x++;
+        result[x] = await result[x]
+          .map(async (name) => {
+            nameToUpdate = await Names.findOne({
+              where: {
+                name: name,
+              },
+            });
+
+            await nameToUpdate.update({ prev: ins });
+
+            return name;
+          })
+          .join(' ');
+        console.log(result[x]);
+
+        allIns.push(await result[x]);
+
+        // return result[x];
+      });
+      console.log(allIns);
+      return msg.reply(allIns);
+    } else {
+      fullNames.forEach(async (name) => {
+        const insList = name.prev.split(',');
+
+        const detectIns = instructors.indexOf(insList[insList.length - 1]);
+
+        instructorsMap[instructors[(detectIns + 1) % instructors.length]] = [
+          ...instructorsMap[instructors[(detectIns + 1) % instructors.length]],
+          name.name,
+        ];
+
+        const nameToUpdate = await Names.findOne({
+          where: {
+            name: name.name,
+          },
+        });
+
+        await nameToUpdate.update({
+          prev:
+            nameToUpdate.prev +
+            ',' +
+            instructors[(detectIns + 1) % instructors.length],
+        });
+      });
     }
-    let zainab = result[0];
-    let laila = result[1];
-    let ahmad = result[2];
-    laila = laila.map((name) => `\n ${name}`);
-    zainab = zainab.map((name) => `\n ${name}`);
-    ahmad = ahmad.map((name) => `\n ${name}`);
 
-    // zainab = names.map((pair) => {
-    //   return `\`\`\` \`\`\``;
-    // });
-
-    return msg.reply(
-      ` \`\`\` Laila A : ${laila.toString()} \`\`\`  \`\`\` Zainab AlBaqasami : ${zainab}  \`\`\`  \`\`\` Ahmed AlKhunaizi : ${ahmad} \`\`\`   `
-    );
+    // return msg.reply(" ```   ``` ");
   }
 });
-
-client.login('ODU3NTIxMjczNTAwNzI5MzU0.YNQy6w.XFWyudx6RXjz2nl9TGNgDyVNJW8');
+client.login(process.env.TOKEN);
