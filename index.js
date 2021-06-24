@@ -1,29 +1,39 @@
-const Discord = require('discord.js');
-var http = require('http');
-var fs = require('fs');
-const dotenv = require('dotenv').config();
-const Sequelize = require('sequelize');
-const { Client, MessageAttachment } = require('discord.js');
-const sequelize = new Sequelize('discord_db', 'postgres', 'root', {
-  host: '127.0.0.1',
-  dialect: 'postgres',
+const Discord = require("discord.js");
+var http = require("http");
+var fs = require("fs");
+const dotenv = require("dotenv").config();
+const Sequelize = require("sequelize");
+const { Client, MessageAttachment } = require("discord.js");
+const sequelize = new Sequelize("discord_db", "postgres", "123456", {
+  host: "127.0.0.1",
+  dialect: "postgres",
   logging: false,
 });
-const Names = sequelize.define('names', {
-  name: {
-    type: Sequelize.STRING,
+
+let currentGroup = "JO21";
+const Names = sequelize.define(
+  "names",
+  {
+    name: {
+      type: Sequelize.STRING,
+    },
+    group: {
+      type: Sequelize.STRING,
+    },
+    type: {
+      type: Sequelize.STRING,
+    },
+    prevI: {
+      type: Sequelize.STRING,
+    },
+    prevP: {
+      type: Sequelize.STRING,
+    },
   },
-  type: {
-    type: Sequelize.STRING,
-  },
-  prev: {
-    type: Sequelize.STRING,
-  },
-  absent: {
-    type: Sequelize.BOOLEAN,
-  },
-});
+  { createdAt: false, updatedAt: false }
+);
 Names.sync();
+
 // add a name func
 const add = async (name, type) => {
   try {
@@ -31,17 +41,23 @@ const add = async (name, type) => {
       name: name,
       type: type,
       absent: false,
+      group: currentGroup,
     });
     // return message.reply(`Tag ${tag.name} added.`);
   } catch (e) {
     // return message.reply('Something went wrong with adding a tag.');
   }
 };
-// add a list of names func
+
 const bulkAdd = async (names, type) => {
   try {
-    names = names.split(',');
-    names = names.map((name) => ({ name: name, type: type, absent: false }));
+    names = names.split(",");
+    names = names.map((name) => ({
+      name: name,
+      type: type,
+      absent: false,
+      group: currentGroup,
+    }));
     const addNames = await Names.bulkCreate(names);
     // return message.reply(`Tag ${tag.name} added.`);
   } catch (e) {
@@ -72,90 +88,86 @@ const abs = async (name) => {
 };
 
 const client = new Client();
-client.on('ready', () => {
+client.on("ready", () => {
   console.log(`Logged in as ${client.user.tag}!`);
 });
 
-client.on('message', (msg) => {
-  if (msg.content === 'ping') {
-    msg.reply('pong');
+client.on("message", (msg) => {
+  if (msg.content.includes("!setGroup")) {
+    currentGroup = msg.content.split("!setGroup ")[1];
+    msg.reply("Current group now is :" + currentGroup);
   }
-});
-
-client.on('message', (message) => {
-  // If the message is '!rip'
-  if (message.content === '!wow') {
-    // Create the attachment using MessageAttachment
+  // Attach
+  else if (msg.content === "!wow") {
     const attachment = new MessageAttachment(
-      'https://cdn140.picsart.com/308864669055201.gif?to=min&r=640'
+      "https://cdn140.picsart.com/308864669055201.gif?to=min&r=640"
     );
-    // Send the attachment in the message channel
-    message.channel.send(attachment);
+    msg.channel.send(attachment);
   }
 });
 
 // adding a student
-client.on('message', (msg) => {
-  if (msg.content.includes('!addStudent')) {
-    const name = msg.content.split('!addStudent ')[1];
-    add(name, 'student');
+client.on("message", (msg) => {
+  if (msg.content.includes("!addStudent")) {
+    const name = msg.content.split("!addStudent ")[1];
+    add(name, "student");
     return msg.reply(`Student ${name} added.`);
   }
 });
 // adding an instructor
-client.on('message', (msg) => {
-  if (msg.content.includes('!addInstructor')) {
-    const name = msg.content.split('!addInstructor ')[1];
-    add(name, 'instructors');
+client.on("message", (msg) => {
+  if (msg.content.includes("!addInstructor")) {
+    const name = msg.content.split("!addInstructor ")[1];
+    add(name, "instructors");
     return msg.reply(`Instructor ${name} added.`);
   }
 });
 // adding list of Students
-client.on('message', (msg) => {
-  if (msg.content.includes('!bulkStudents')) {
-    const names = msg.content.split('!bulkStudents ')[1];
-    bulkAdd(names, 'student');
+client.on("message", (msg) => {
+  if (msg.content.includes("!bulkStudents")) {
+    const names = msg.content.split("!bulkStudents ")[1];
+    bulkAdd(names, "student");
     return msg.reply(`Students added.`);
   }
 });
 // adding list of Instructors
-client.on('message', (msg) => {
-  if (msg.content.includes('!bulkInstructors')) {
-    const names = msg.content.split('!bulkInstructors ')[1];
-    bulkAdd(names, 'instructors');
+client.on("message", (msg) => {
+  if (msg.content.includes("!bulkInstructors")) {
+    const names = msg.content.split("!bulkInstructors ")[1];
+    bulkAdd(names, "instructors");
     return msg.reply(`Instructors added.`);
   }
 });
 
 // clearing the db
-client.on('message', (msg) => {
-  if (msg.content.includes('!clearDb')) {
+client.on("message", (msg) => {
+  if (msg.content.includes("!clearDb")) {
     Names.sync({ force: true });
     return msg.reply(`Names cleard.`);
   }
 });
 
 // deleting a name
-client.on('message', (msg) => {
-  if (msg.content.includes('!removeName')) {
-    const name = msg.content.split('!removeName ')[1];
+client.on("message", (msg) => {
+  if (msg.content.includes("!removeName")) {
+    const name = msg.content.split("!removeName ")[1];
     del(name);
     return msg.reply(`Name ${name} deleted.`);
   }
 });
 // absent a name
-client.on('message', (msg) => {
-  if (msg.content.includes('!absent')) {
-    const name = msg.content.split('!absent ')[1];
+client.on("message", (msg) => {
+  if (msg.content.includes("!absent")) {
+    const name = msg.content.split("!absent ")[1];
     abs(name);
     return msg.reply(`Student ${name} Absent.`);
   }
 });
 // listing names
-client.on('message', async (msg) => {
-  if (msg.content.includes('!listNames')) {
+client.on("message", async (msg) => {
+  if (msg.content.includes("!listNames")) {
     let names = await Names.findAll({
-      attributes: ['name'],
+      attributes: ["name"],
     });
     names = names.map((name) => name.name);
     return msg.reply(`Names: ${names.toString()}.`);
@@ -163,49 +175,112 @@ client.on('message', async (msg) => {
 });
 
 // creating pairs
-client.on('message', async (msg) => {
-  if (msg.content.includes('!pairs')) {
-    let names = await Names.findAll({
-      attributes: ['name'],
+client.on("message", async (msg) => {
+  if (msg.content.includes("!pairs")) {
+    let exculdeNames;
+    exculdeNames = msg.content.split("!pairs ")[1]
+      ? msg.content.split("!pairs ")[1].split(",")
+      : [];
+    let currentNames = await Names.findAll({
       where: {
-        type: 'student',
-        absent: false,
+        type: "student",
+        group: currentGroup,
       },
+      order: [["id"]],
     });
-    names = names.map((name) => name.name);
-    names = names.sort((a, b) => 0.5 - Math.random());
-    names = names.reduce(function (result, value, index, array) {
-      if (index % 2 === 0) result.push(array.slice(index, index + 2));
-      return result;
-    }, []);
-    let i = 0;
-    names = names.map((pair) => {
-      i++;
+    let shifts = +currentNames[0].prevP ?? 0;
+    currentNames = currentNames.filter((a) => !exculdeNames.includes(a.name));
+    await Names.update(
+      { prevP: +shifts + 1 < currentNames.length ? shifts + 1 : 0 },
+      {
+        where: {
+          group: currentGroup,
+          type: "student",
+        },
+      }
+    );
+    let arr = [];
+    for (let i = 0; i < currentNames.length; i++) arr.push(i);
+    let reverseArr = [...arr].reverse();
+    let temp1 = reverseArr.slice(0, Math.floor(reverseArr.length / 2));
+    let temp2 = reverseArr.slice(
+      Math.floor(reverseArr.length / 2),
+      reverseArr.length
+    );
+    //reverseArr = [...temp2, ...temp1];
+    for (let i = 0; i < shifts - exculdeNames.length; i++) {
+      reverseArr.unshift(reverseArr.pop());
+    }
 
-      return `\`\`\` Pair ${i}: ${pair[0]} ${
-        pair[1] ? `- ${pair[1]}` : ''
-      } \`\`\``;
+    let pairs = [];
+    let lost = [];
+    for (let i = 0; i < arr.length; i++) {
+      if (arr[i] === reverseArr[i]) lost.push(arr[i]);
+      else {
+        if (arr[i] > reverseArr[i]) pairs.push(arr[i] + "-" + reverseArr[i]);
+        else pairs.push(reverseArr[i] + "-" + arr[i]);
+      }
+    }
+    if (lost.length > 0) pairs.push(lost.join("-"));
+    pairs = [...new Set(pairs)];
+    let currentInstructor = await Names.findAll({
+      where: {
+        type: "instructors",
+        group: currentGroup,
+      },
+      order: sequelize.random(),
     });
+    console.log(exculdeNames);
+    currentInstructor = currentInstructor
+      .filter((a) => !exculdeNames.includes(a.name))
+      .map((a) => [a.id, a.name, []]);
+    for (let i = 0; i < pairs.length; i++) {
+      currentInstructor[i % currentInstructor.length][2].push(pairs[i]);
+    }
+    currentInstructor.sort((a, b) => a[0] - b[0]);
+    let counter = 1;
+    currentInstructor = currentInstructor.map((array) => {
+      let string = "```" + array[1] + "\n";
+      array[2].forEach((pair) => {
+        string +=
+          "Pair " +
+          counter +
+          ": " +
+          currentNames[+pair.split("-")[0]].name +
+          (currentNames[+pair.split("-")[1]] === undefined
+            ? ""
+            : " - " + currentNames[+pair.split("-")[1]].name) +
+          "\n";
+        counter++;
+      });
+      string += "```";
 
-    return msg.reply(` ${names.join(' ')} `);
+      return string;
+    });
+    return msg.reply(currentInstructor);
+
+    //console.log(pairsMap);
+    // return `\`\`\` Pair ${i}: ${pair[0]} ${
+    //   pair[1] ? `- ${pair[1]}` : ""
+    // } \`\`\``;
   }
 });
 
 // creating Iod
-client.on('message', async (msg) => {
-  if (msg.content.includes('!iod')) {
+client.on("message", async (msg) => {
+  if (msg.content.includes("!iod")) {
     let fullNames = await Names.findAll({
-      attributes: ['name', 'prev'],
+      attributes: ["name", "prev"],
       where: {
-        type: 'student',
+        type: "student",
         absent: false,
       },
       order: sequelize.random(),
     });
     let instructors = await Names.findAll({
-      attributes: ['name'],
+      attributes: ["name"],
       where: {
-        type: 'instructors',
+        type: "instructors",
       },
     });
 
@@ -213,7 +288,7 @@ client.on('message', async (msg) => {
     instructors = instructors.map((name) => name.name);
     const tempStudent = await Names.findOne({
       where: {
-        type: 'student',
+        type: "student",
       },
     });
     let result = [];
@@ -221,7 +296,7 @@ client.on('message', async (msg) => {
     instructors.forEach((ins) => (instructorsMap[ins] = []));
     if (
       tempStudent.prev === null ||
-      tempStudent.prev.split(',').length === instructors.length
+      tempStudent.prev.split(",").length === instructors.length
     ) {
       for (let i = instructors.length; i > 0; i--) {
         result.push(names.splice(0, Math.ceil(names.length / i)));
@@ -242,7 +317,7 @@ client.on('message', async (msg) => {
 
             return name;
           })
-          .join(' ');
+          .join(" ");
         console.log(result[x]);
 
         allIns.push(await result[x]);
@@ -253,7 +328,7 @@ client.on('message', async (msg) => {
       return msg.reply(allIns);
     } else {
       fullNames.forEach(async (name) => {
-        const insList = name.prev.split(',');
+        const insList = name.prev.split(",");
 
         const detectIns = instructors.indexOf(insList[insList.length - 1]);
 
@@ -271,7 +346,7 @@ client.on('message', async (msg) => {
         await nameToUpdate.update({
           prev:
             nameToUpdate.prev +
-            ',' +
+            "," +
             instructors[(detectIns + 1) % instructors.length],
         });
       });
