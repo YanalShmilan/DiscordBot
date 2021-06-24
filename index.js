@@ -202,12 +202,6 @@ client.on("message", async (msg) => {
     let arr = [];
     for (let i = 0; i < currentNames.length; i++) arr.push(i);
     let reverseArr = [...arr].reverse();
-    let temp1 = reverseArr.slice(0, Math.floor(reverseArr.length / 2));
-    let temp2 = reverseArr.slice(
-      Math.floor(reverseArr.length / 2),
-      reverseArr.length
-    );
-    //reverseArr = [...temp2, ...temp1];
     for (let i = 0; i < shifts - exculdeNames.length; i++) {
       reverseArr.unshift(reverseArr.pop());
     }
