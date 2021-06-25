@@ -177,8 +177,7 @@ client.on("message", async (msg) => {
 // creating pairs
 client.on("message", async (msg) => {
   if (msg.content.includes("!pairs")) {
-    let exculdeNames;
-    exculdeNames = msg.content.split("!pairs ")[1]
+    let exculdeNames = msg.content.split("!pairs ")[1]
       ? msg.content.split("!pairs ")[1].split(",")
       : [];
     let currentNames = await Names.findAll({
@@ -263,90 +262,115 @@ client.on("message", async (msg) => {
 // creating Iod
 client.on("message", async (msg) => {
   if (msg.content.includes("!iod")) {
-    let fullNames = await Names.findAll({
-      attributes: ["name", "prev"],
+    let exculdeNames = msg.content.split("!iod ")[1]
+      ? msg.content.split("!iod ")[1].split(",")
+      : [];
+
+    let currentNames = await Names.findAll({
       where: {
         type: "student",
-        absent: false,
+        group: currentGroup,
       },
       order: sequelize.random(),
     });
     let instructors = await Names.findAll({
-      attributes: ["name"],
       where: {
         type: "instructors",
+        group: currentGroup,
       },
+      order: sequelize.random(),
     });
+    let result = "";
+    console.log(+currentNames[0].prevI, instructors.length);
+    instructors1 = instructors.filter((a) => !exculdeNames.includes(a.name));
 
-    names = fullNames.map((name) => name.name);
-    instructors = instructors.map((name) => name.name);
-    const tempStudent = await Names.findOne({
-      where: {
-        type: "student",
-      },
-    });
-    let result = [];
-    let instructorsMap = {};
-    instructors.forEach((ins) => (instructorsMap[ins] = []));
     if (
-      tempStudent.prev === null ||
-      tempStudent.prev.split(",").length === instructors.length
+      currentNames[0].prevI === null ||
+      +currentNames[0].prevI >= instructors.length ||
+      instructors1.length !== instructors.length
     ) {
-      for (let i = instructors.length; i > 0; i--) {
-        result.push(names.splice(0, Math.ceil(names.length / i)));
+      let CurrentShift = true;
+      if (instructors1.length !== instructors.length) {
+        instructors = instructors1;
+        CurrentShift = false;
       }
-      let x = -1;
-      const allIns = [];
-      instructors = await instructors.map(async (ins) => {
-        x++;
-        result[x] = await result[x]
-          .map(async (name) => {
-            nameToUpdate = await Names.findOne({
+
+      let iod = {};
+      let iodName = {};
+      instructors.forEach((i) => {
+        iod[i.id] = [];
+        iodName[i.id] = i.name;
+      });
+
+      for (let i = 0; i < currentNames.length; i++) {
+        iod[instructors[i % instructors.length].id].push([
+          currentNames[i].name,
+          currentNames[i].id,
+        ]);
+      }
+      for (const key in iod) {
+        if (CurrentShift) {
+          await Names.update(
+            {
+              prevI: iod[key].map((a) => a[1]).join(","),
+            },
+            {
               where: {
-                name: name,
+                id: +key,
               },
-            });
+            }
+          );
+        }
+        result += "```" + iodName[key] + "\n";
+        result += iod[key]
+          .map((a) => a[0])
+          .filter((a) => !exculdeNames.includes(a))
+          .join("\n");
+        result += "```";
 
-            await nameToUpdate.update({ prev: ins });
-
-            return name;
-          })
-          .join(" ");
-        console.log(result[x]);
-
-        allIns.push(await result[x]);
-
-        // return result[x];
-      });
-      console.log(allIns);
-      return msg.reply(allIns);
-    } else {
-      fullNames.forEach(async (name) => {
-        const insList = name.prev.split(",");
-
-        const detectIns = instructors.indexOf(insList[insList.length - 1]);
-
-        instructorsMap[instructors[(detectIns + 1) % instructors.length]] = [
-          ...instructorsMap[instructors[(detectIns + 1) % instructors.length]],
-          name.name,
-        ];
-
-        const nameToUpdate = await Names.findOne({
+        console.log(iodName[key], iod[key]);
+      }
+      await Names.update(
+        { prevI: CurrentShift ? 1 : +currentNames[0].prevI },
+        {
           where: {
-            name: name.name,
+            type: "student",
+            group: currentGroup,
           },
-        });
+        }
+      );
+    } else {
+      // 7,3,6,15,14
+      instructors.sort((a, b) => a.id - b.id);
+      let newiod = {};
+      //console.log(instructors);
+      for (let i = 0; i < instructors.length; i++) {
+        let temp = +currentNames[0].prevI;
+        newiod[instructors[i].name] =
+          instructors[(i + temp) % instructors.length].prevI.split(",");
+      }
+      await Names.update(
+        { prevI: +currentNames[0].prevI + 1 },
+        {
+          where: {
+            type: "student",
+            group: currentGroup,
+          },
+        }
+      );
+      console.log(exculdeNames);
+      for (const key in newiod) {
+        newiod[key] = newiod[key]
+          .map((a) => currentNames.find((z) => +z.id === +a).name)
+          .filter((a) => !exculdeNames.includes(a));
 
-        await nameToUpdate.update({
-          prev:
-            nameToUpdate.prev +
-            "," +
-            instructors[(detectIns + 1) % instructors.length],
-        });
-      });
+        result += "```" + key + "\n";
+        result += newiod[key].join("\n");
+        result += "```";
+      }
     }
 
-    // return msg.reply(" ```   ``` ");
+    return msg.reply(result);
   }
 });
 client.login(process.env.TOKEN);
