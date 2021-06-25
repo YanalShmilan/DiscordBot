@@ -10,6 +10,9 @@ const sequelize = new Sequelize("discord_db", "postgres", "123456", {
   logging: false,
 });
 
+const nodeHtmlToImage = require("node-html-to-image");
+const { group } = require("console");
+
 let currentGroup = "JO21";
 const Names = sequelize.define(
   "names",
@@ -163,6 +166,37 @@ client.on("message", (msg) => {
     return msg.reply(`Student ${name} Absent.`);
   }
 });
+client.on("message", (msg) => {
+  if (msg.content.includes("!imagetest")) {
+    nodeHtmlToImage({
+      output: "./image.png",
+      html: `<html>
+      <head>
+        <style>
+          body {
+            width: 480px;
+            height: 480px;
+          }
+        </style>
+      </head>
+      <body>
+      <table>
+        <tr>
+          <td>Laila </td>
+          <td>Ahmad </td>
+          <td>Zaineb </td>
+        </tr>
+      </table></body>
+    </html>
+    `,
+    }).then(() => {
+      console.log("The image was created successfully!");
+      msg.reply(new MessageAttachment("./image.png"));
+    });
+
+    return;
+  }
+});
 // listing names
 client.on("message", async (msg) => {
   if (msg.content.includes("!listNames")) {
@@ -262,6 +296,8 @@ client.on("message", async (msg) => {
 // creating Iod
 client.on("message", async (msg) => {
   if (msg.content.includes("!iod")) {
+    let thArray = [];
+    let tableBody = [];
     let exculdeNames = msg.content.split("!iod ")[1]
       ? msg.content.split("!iod ")[1].split(",")
       : [];
@@ -308,6 +344,14 @@ client.on("message", async (msg) => {
           currentNames[i].id,
         ]);
       }
+
+      for (let i = 0; i < currentNames.length / instructors.length; i++) {
+        tableBody.push([]);
+      }
+      let max = 0;
+      for (const key in iod) {
+        max = Math.max(iod[key].length, max);
+      }
       for (const key in iod) {
         if (CurrentShift) {
           await Names.update(
@@ -321,14 +365,21 @@ client.on("message", async (msg) => {
             }
           );
         }
-        result += "```" + iodName[key] + "\n";
-        result += iod[key]
+        iod[key] = iod[key]
           .map((a) => a[0])
-          .filter((a) => !exculdeNames.includes(a))
-          .join("\n");
-        result += "```";
+          .filter((a) => !exculdeNames.includes(a));
 
-        console.log(iodName[key], iod[key]);
+        if (iod[key].length !== max) iod[key].push("");
+
+        result += "```" + iodName[key] + "\n";
+        result += iod[key].join("\n");
+        result += "```";
+        thArray.push(iodName[key]);
+        let count = 0;
+        iod[key].forEach((studentName) => {
+          tableBody[count % tableBody.length].push(studentName);
+          count++;
+        });
       }
       await Names.update(
         { prevI: CurrentShift ? 1 : +currentNames[0].prevI },
@@ -339,6 +390,94 @@ client.on("message", async (msg) => {
           },
         }
       );
+
+      thArray = thArray.map((a) => "<td>" + a.split(" ")[0] + "</td>");
+      tableBody = tableBody.map((a) => "<td>" + a.join("</td><td>") + "</td>");
+
+      nodeHtmlToImage({
+        output: "./image.png",
+        html: `<html>
+      <head>
+        <style>
+          body {
+            width: 700px;
+            height: ${-1 + tableBody.length * 50}px;
+            background-color:#2F3136;
+          }
+          .styled-table {
+            border-collapse: collapse;
+            margin: 25px 0;
+            font-size: 0.9em;
+            font-family: sans-serif;
+            width: 700px;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.15);
+            background-color:#FFFFFF;
+        }
+        .styled-table thead tr {
+          background-color: #17243D;
+          color: #ffffff;
+          text-align: left;
+      }
+      .styled-table th,
+.styled-table td {
+  padding: 12px 15px;
+}
+
+          .styled-table tbody tr {
+            border-bottom: 1px solid #dddddd;
+        }
+        
+        .styled-table tbody tr:nth-of-type(even) {
+            background-color: #f3f3f3;
+        }
+        
+        .styled-table tbody tr:last-of-type {
+            border-bottom: 2px solid #17243D;
+        }
+
+        </style>
+      </head>
+      <body>
+      <center>
+      <table class="styled-table">
+      <thead>
+        <tr>
+        ${thArray.join("")}
+        </tr>
+        </thead>
+        <tbody>
+        <tr>
+        ${tableBody.join("</tr><tr>")}
+        </tr>
+        </tbody>
+      </table>
+      </center>
+      </body>
+      
+    </html>
+    `,
+      }).then(() => {
+        const exampleEmbed = new Discord.MessageEmbed()
+
+          .setColor("#17243D")
+          .setTitle("Instructors of the Day")
+          .setURL("https://www.joincoded.com/")
+          .setAuthor(
+            "COODED " + currentGroup,
+            "https://media-exp1.licdn.com/dms/image/C4D0BAQHLyZXsUy3iaw/company-logo_200_200/0/1543400549551?e=2159024400&v=beta&t=7eYjtPJHw3cORsm2jWJNWQ3Ee9EpZG0VmLsPgODpvAA",
+            "https://www.joincoded.com/"
+          )
+          .setThumbnail(
+            "https://media-exp1.licdn.com/dms/image/C4D0BAQHLyZXsUy3iaw/company-logo_200_200/0/1543400549551?e=2159024400&v=beta&t=7eYjtPJHw3cORsm2jWJNWQ3Ee9EpZG0VmLsPgODpvAA"
+          )
+          .setImage(
+            "https://media-exp1.licdn.com/dms/image/C4D0BAQHLyZXsUy3iaw/company-logo_200_200/0/1543400549551?e=2159024400&v=beta&t=7eYjtPJHw3cORsm2jWJNWQ3Ee9EpZG0VmLsPgODpvAA"
+          )
+          .setTimestamp()
+          .attachFiles(["./image.png"])
+          .setImage("attachment://image.png");
+        return msg.reply(exampleEmbed);
+      });
     } else {
       // 7,3,6,15,14
       instructors.sort((a, b) => a.id - b.id);
@@ -358,19 +497,121 @@ client.on("message", async (msg) => {
           },
         }
       );
-      console.log(exculdeNames);
+      let thArray = [];
+      let tableBody = [];
+      for (let i = 0; i < currentNames.length / instructors.length; i++) {
+        tableBody.push([]);
+      }
+      let max = 0;
+      for (const key in newiod) {
+        max = Math.max(newiod[key].length, max);
+      }
       for (const key in newiod) {
         newiod[key] = newiod[key]
           .map((a) => currentNames.find((z) => +z.id === +a).name)
           .filter((a) => !exculdeNames.includes(a));
-
+        if (newiod[key].length !== max) newiod[key].push("");
+        thArray.push(key);
+        count = 0;
+        newiod[key].forEach((studentName) => {
+          tableBody[count % tableBody.length].push(studentName);
+          count++;
+        });
         result += "```" + key + "\n";
         result += newiod[key].join("\n");
         result += "```";
       }
-    }
+      //#009879
 
-    return msg.reply(result);
+      thArray = thArray.map((a) => "<td>" + a.split(" ")[0] + "</td>");
+      tableBody = tableBody.map((a) => "<td>" + a.join("</td><td>") + "</td>");
+
+      nodeHtmlToImage({
+        output: "./image.png",
+        html: `<html>
+        <head>
+          <style>
+            body {
+              width: 700px;
+              height: ${-1 + tableBody.length * 50}px;
+              background-color:#2F3136;
+            }
+            .styled-table {
+              border-collapse: collapse;
+              margin: 25px 0;
+              font-size: 0.9em;
+              font-family: sans-serif;
+              width: 700px;
+              box-shadow: 0 0 20px rgba(0, 0, 0, 0.15);
+              background-color:#FFFFFF;
+          }
+          .styled-table thead tr {
+            background-color: #17243D;
+            color: #ffffff;
+            text-align: left;
+        }
+        .styled-table th,
+  .styled-table td {
+    padding: 12px 15px;
+  }
+  
+            .styled-table tbody tr {
+              border-bottom: 1px solid #dddddd;
+          }
+          
+          .styled-table tbody tr:nth-of-type(even) {
+              background-color: #f3f3f3;
+          }
+          
+          .styled-table tbody tr:last-of-type {
+              border-bottom: 2px solid #17243D;
+          }
+  
+          </style>
+        </head>
+        <body>
+        <center>
+        <table class="styled-table">
+        <thead>
+          <tr>
+          ${thArray.join("")}
+          </tr>
+          </thead>
+          <tbody>
+          <tr>
+          ${tableBody.join("</tr><tr>")}
+          </tr>
+          </tbody>
+        </table>
+        </center>
+        </body>
+        
+      </html>
+      `,
+      }).then(() => {
+        const exampleEmbed = new Discord.MessageEmbed()
+
+          .setColor("#17243D")
+          .setTitle("Instructors of the Day")
+          .setURL("https://www.joincoded.com/")
+          .setAuthor(
+            "COODED " + currentGroup,
+            "https://media-exp1.licdn.com/dms/image/C4D0BAQHLyZXsUy3iaw/company-logo_200_200/0/1543400549551?e=2159024400&v=beta&t=7eYjtPJHw3cORsm2jWJNWQ3Ee9EpZG0VmLsPgODpvAA",
+            "https://www.joincoded.com/"
+          )
+          .setThumbnail(
+            "https://media-exp1.licdn.com/dms/image/C4D0BAQHLyZXsUy3iaw/company-logo_200_200/0/1543400549551?e=2159024400&v=beta&t=7eYjtPJHw3cORsm2jWJNWQ3Ee9EpZG0VmLsPgODpvAA"
+          )
+          .setImage(
+            "https://media-exp1.licdn.com/dms/image/C4D0BAQHLyZXsUy3iaw/company-logo_200_200/0/1543400549551?e=2159024400&v=beta&t=7eYjtPJHw3cORsm2jWJNWQ3Ee9EpZG0VmLsPgODpvAA"
+          )
+          .setTimestamp()
+          .attachFiles(["./image.png"])
+          .setImage("attachment://image.png");
+        return msg.reply(exampleEmbed);
+      });
+    }
+    console.log(tableBody);
   }
 });
 client.login(process.env.TOKEN);
