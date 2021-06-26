@@ -1,21 +1,21 @@
-const Discord = require('discord.js');
-var http = require('http');
-var fs = require('fs');
-const dotenv = require('dotenv').config();
-const Sequelize = require('sequelize');
-const { Client, MessageAttachment } = require('discord.js');
-const sequelize = new Sequelize('discord_db', 'postgres', 'root', {
-  host: '127.0.0.1',
-  dialect: 'postgres',
+const Discord = require("discord.js");
+var http = require("http");
+var fs = require("fs");
+const dotenv = require("dotenv").config();
+const Sequelize = require("sequelize");
+const { Client, MessageAttachment } = require("discord.js");
+const sequelize = new Sequelize("discord_db", "postgres", "123456", {
+  host: "127.0.0.1",
+  dialect: "postgres",
   logging: false,
 });
 
-const nodeHtmlToImage = require('node-html-to-image');
-const { group } = require('console');
+const nodeHtmlToImage = require("node-html-to-image");
+const { group } = require("console");
 
-let currentGroup = 'JO21';
+let currentGroup = "JO21";
 const Names = sequelize.define(
-  'names',
+  "names",
   {
     name: {
       type: Sequelize.STRING,
@@ -54,7 +54,7 @@ const add = async (name, type) => {
 
 const bulkAdd = async (names, type) => {
   try {
-    names = names.split(',');
+    names = names.split(",");
     names = names.map((name) => ({
       name: name,
       type: type,
@@ -91,52 +91,52 @@ const abs = async (name) => {
 };
 
 const client = new Client();
-client.on('ready', () => {
+client.on("ready", () => {
   console.log(`Logged in as ${client.user.tag}!`);
 });
 
-client.on('message', (msg) => {
-  if (msg.content.includes('!setGroup')) {
-    currentGroup = msg.content.split('!setGroup ')[1];
-    msg.reply('Current group now is :' + currentGroup);
+client.on("message", (msg) => {
+  if (msg.content.includes("!setGroup")) {
+    currentGroup = msg.content.split("!setGroup ")[1];
+    msg.reply("Current group now is :" + currentGroup);
   }
   // Attach
-  else if (msg.content === '!wow') {
+  else if (msg.content === "!wow") {
     const attachment = new MessageAttachment(
-      'https://cdn140.picsart.com/308864669055201.gif?to=min&r=640'
+      "https://cdn140.picsart.com/308864669055201.gif?to=min&r=640"
     );
     msg.channel.send(attachment);
   }
 });
 // easter eggs
-client.on('message', (msg) => {
-  if (msg.content.includes('!laila')) {
-    msg.reply('Is the best instructor');
+client.on("message", (msg) => {
+  if (msg.content.includes("!laila")) {
+    msg.reply("Is the best instructor");
   }
   // Attach
-  else if (msg.content === '!zainab') {
-    msg.reply('Zeinab*');
-  } else if (msg.content === '!ahmad') {
+  else if (msg.content === "!zainab") {
+    msg.reply("Zeinab*");
+  } else if (msg.content === "!ahmad") {
     msg.reply(
-      'You are using an old version please run the command !updateAhmad to upgrade'
+      "You are using an old version please run the command !updateAhmad to upgrade"
     );
-  } else if (msg.content === '!updateAhmad') {
-    msg.reply('Ahmad 1.0 is the best');
-  } else if (msg.content === '!hajar') {
-    msg.reply('We miss you');
-  } else if (msg.content === '!ibrahim') {
-    msg.reply('Did you mean العندليب؟');
-  } else if (msg.content === '!ismael') {
-    msg.reply('فلاح');
-  } else if (msg.content === '!yanal') {
-    msg.reply(':hatching_chick:');
+  } else if (msg.content === "!updateAhmad") {
+    msg.reply("Ahmad 1.0 is the best");
+  } else if (msg.content === "!hajar") {
+    msg.reply("We miss you");
+  } else if (msg.content === "!ibrahim") {
+    msg.reply("Did you mean العندليب؟");
+  } else if (msg.content === "!ismael") {
+    msg.reply("فلاح");
+  } else if (msg.content === "!yanal") {
+    msg.reply(":hatching_chick:");
   }
 });
 
 // Help
-client.on('message', (msg) => {
+client.on("message", (msg) => {
   if (msg.author.bot) return;
-  if (msg.content === '!helpMe') {
+  if (msg.content === "!helpMe") {
     const helpMsg1 = ` \`\`\`  
     Welcome to Ahmad2.0 Discord Bot, made in inhuman conditions under the supervision of Laila A to help you generate 
     Instructor of the day and Pairs for your students. \n \`\`\`  `;
@@ -199,72 +199,72 @@ client.on('message', (msg) => {
 });
 
 // adding a student
-client.on('message', (msg) => {
+client.on("message", (msg) => {
   if (msg.author.bot) return;
 
-  if (msg.content.includes('!addStudent')) {
-    const name = msg.content.split('!addStudent ')[1];
-    add(name, 'student');
+  if (msg.content.includes("!addStudent")) {
+    const name = msg.content.split("!addStudent ")[1];
+    add(name, "student");
     return msg.reply(`Student ${name} added.`);
   }
 });
 // adding an instructor
-client.on('message', (msg) => {
+client.on("message", (msg) => {
   if (msg.author.bot) return;
 
-  if (msg.content.includes('!addInstructor')) {
-    const name = msg.content.split('!addInstructor ')[1];
-    add(name, 'instructors');
+  if (msg.content.includes("!addInstructor")) {
+    const name = msg.content.split("!addInstructor ")[1];
+    add(name, "instructors");
     return msg.reply(`Instructor ${name} Added`);
   }
 });
 // adding list of Students
-client.on('message', (msg) => {
+client.on("message", (msg) => {
   if (msg.author.bot) return;
 
-  if (msg.content.includes('!bulkStudents')) {
-    const names = msg.content.split('!bulkStudents ')[1];
-    bulkAdd(names, 'student');
+  if (msg.content.includes("!bulkStudents")) {
+    const names = msg.content.split("!bulkStudents ")[1];
+    bulkAdd(names, "student");
     return msg.reply(`Students added.`);
   }
 });
 // adding list of Instructors
-client.on('message', (msg) => {
+client.on("message", (msg) => {
   if (msg.author.bot) return;
 
-  if (msg.content.includes('!bulkInstructors')) {
-    const names = msg.content.split('!bulkInstructors ')[1];
-    bulkAdd(names, 'instructors');
+  if (msg.content.includes("!bulkInstructors")) {
+    const names = msg.content.split("!bulkInstructors ")[1];
+    bulkAdd(names, "instructors");
     return msg.reply(`Instructors added.`);
   }
 });
 
 // clearing the db
-client.on('message', (msg) => {
+client.on("message", (msg) => {
   if (msg.author.bot) return;
 
-  if (msg.content.includes('!clearDb')) {
+  if (msg.content.includes("!clearDb")) {
     Names.sync({ force: true });
     return msg.reply(`Names cleard.`);
   }
 });
 
 // deleting a name
-client.on('message', (msg) => {
+client.on("message", (msg) => {
   if (msg.author.bot) return;
 
-  if (msg.content.includes('!removeName')) {
-    const name = msg.content.split('!removeName ')[1];
+  if (msg.content.includes("!removeName")) {
+    const name = msg.content.split("!removeName ")[1];
     del(name);
     return msg.reply(`Name ${name} deleted.`);
   }
 });
-client.on('message', (msg) => {
+client.on("message", (msg) => {
   if (msg.author.bot) return;
 
-  if (msg.content.includes('!imagetest')) {
+  if (msg.content.includes("!imagetest")) {
     nodeHtmlToImage({
-      output: './image.png',
+      output: "./image.png",
       html: `<html>
       <head>
         <style>
@@ -285,20 +285,20 @@ client.on('message', (msg) => {
     </html>
     `,
     }).then(() => {
-      console.log('The image was created successfully!');
-      msg.reply(new MessageAttachment('./image.png'));
+      console.log("The image was created successfully!");
+      msg.reply(new MessageAttachment("./image.png"));
     });
 
     return;
   }
 });
 // listing names
-client.on('message', async (msg) => {
+client.on("message", async (msg) => {
   if (msg.author.bot) return;
 
-  if (msg.content.includes('!listNames')) {
+  if (msg.content.includes("!listNames")) {
     let names = await Names.findAll({
-      attributes: ['name'],
+      attributes: ["name"],
     });
     names = names.map((name) => name.name);
     return msg.reply(`Names: ${names.toString()}.`);
@@ -306,19 +306,19 @@ client.on('message', async (msg) => {
 });
 
 // creating pairs
-client.on('message', async (msg) => {
+client.on("message", async (msg) => {
   if (msg.author.bot) return;
 
-  if (msg.content.includes('!pairs')) {
-    let exculdeNames = msg.content.split('!pairs ')[1]
-      ? msg.content.split('!pairs ')[1].split(',')
+  if (msg.content.includes("!pairs")) {
+    let exculdeNames = msg.content.split("!pairs ")[1]
+      ? msg.content.split("!pairs ")[1].split(",")
       : [];
     let currentNames = await Names.findAll({
       where: {
-        type: 'student',
+        type: "student",
         group: currentGroup,
       },
-      order: [['id']],
+      order: [["id"]],
     });
     let shifts = +currentNames[0].prevP ?? 0;
     currentNames = currentNames.filter((a) => !exculdeNames.includes(a.name));
@@ -327,7 +327,7 @@ client.on('message', async (msg) => {
       {
         where: {
           group: currentGroup,
-          type: 'student',
+          type: "student",
         },
       }
     );
@@ -343,15 +343,15 @@ client.on('message', async (msg) => {
     for (let i = 0; i < arr.length; i++) {
       if (arr[i] === reverseArr[i]) lost.push(arr[i]);
       else {
-        if (arr[i] > reverseArr[i]) pairs.push(arr[i] + '-' + reverseArr[i]);
-        else pairs.push(reverseArr[i] + '-' + arr[i]);
+        if (arr[i] > reverseArr[i]) pairs.push(arr[i] + "-" + reverseArr[i]);
+        else pairs.push(reverseArr[i] + "-" + arr[i]);
       }
     }
-    if (lost.length > 0) pairs.push(lost.join('-'));
+    if (lost.length > 0) pairs.push(lost.join("-"));
     pairs = [...new Set(pairs)];
     let currentInstructor = await Names.findAll({
       where: {
-        type: 'instructors',
+        type: "instructors",
         group: currentGroup,
       },
       order: sequelize.random(),
@@ -365,25 +365,136 @@ client.on('message', async (msg) => {
     }
     currentInstructor.sort((a, b) => a[0] - b[0]);
     let counter = 1;
+    let thArray = [];
+    let tableBody = [];
+    for (let i = 0; i < pairs.length / currentInstructor.length; i++) {
+      tableBody.push([]);
+    }
+    let max = 0;
+    for (let i = 0; i < currentInstructor.length; i++) {
+      max = Math.max(currentInstructor[i][2].length, max);
+    }
+    let fakecounter = 0;
     currentInstructor = currentInstructor.map((array) => {
-      let string = '```' + array[1] + '\n';
+      let string = "```" + array[1] + "\n";
+      if (array[2].length < max) array[2].push("");
+      thArray.push(array[1]);
       array[2].forEach((pair) => {
+        tableBody[(counter - 1) % tableBody.length].push(
+          (pair === ""
+            ? fakecounter++
+              ? ""
+              : ""
+            : "<small style='color:grey'>(" +
+              (counter - fakecounter) +
+              ")</small> " +
+              "<br> " +
+              currentNames[+pair.split("-")[0]].name) +
+            (currentNames[+pair.split("-")[1]] === undefined
+              ? "<br>"
+              : " <br> " + currentNames[+pair.split("-")[1]].name)
+        );
         string +=
-          'Pair ' +
+          "Pair " +
           counter +
-          ': ' +
-          currentNames[+pair.split('-')[0]].name +
-          (currentNames[+pair.split('-')[1]] === undefined
-            ? ''
-            : ' - ' + currentNames[+pair.split('-')[1]].name) +
-          '\n';
+          ": " +
+          (pair === "" ? "" : currentNames[+pair.split("-")[0]].name) +
+          (currentNames[+pair.split("-")[1]] === undefined
+            ? ""
+            : " - " + currentNames[+pair.split("-")[1]].name) +
+          "\n";
         counter++;
       });
-      string += '```';
-
+      string += "```";
       return string;
     });
-    return msg.reply(currentInstructor);
+    thArray = thArray.map((a) => "<td>" + a.split(" ")[0] + "</td>");
+    tableBody = tableBody.map((a) => "<td>" + a.join("</td><td>") + "</td>");
+    nodeHtmlToImage({
+      output: "./image.png",
+      html: `<html>
+      <head>
+        <style>
+          body {
+            width: 700px;
+            height: ${-1 + tableBody.length * 100}px;
+            background-color:#2F3136;
+          }
+          .styled-table {
+            border-collapse: collapse;
+            margin: 25px 0;
+            font-size: 0.9em;
+            font-family: sans-serif;
+            width: 700px;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.15);
+            background-color:#FFFFFF;
+        }
+        .styled-table thead tr {
+          background-color: #17243D;
+          color: #ffffff;
+          text-align: left;
+      }
+      .styled-table th,
+.styled-table td {
+  padding: 12px 15px;
+}
+
+          .styled-table tbody tr {
+            border-bottom: 1px solid #dddddd;
+        }
+        
+        .styled-table tbody tr:nth-of-type(even) {
+            background-color: #f3f3f3;
+        }
+        
+        .styled-table tbody tr:last-of-type {
+            border-bottom: 2px solid #17243D;
+        }
+
+        </style>
+      </head>
+      <body>
+      <center>
+      <table class="styled-table">
+      <thead>
+        <tr>
+        ${thArray.join("")}
+        </tr>
+        </thead>
+        <tbody>
+        <tr>
+        ${tableBody.join("</tr><tr>")}
+        </tr>
+        </tbody>
+      </table>
+      </center>
+      </body>
+      
+    </html>
+    `,
+    }).then(() => {
+      const exampleEmbed = new Discord.MessageEmbed()
+
+        .setColor("#17243D")
+        .setTitle(currentGroup + " Pairs")
+        .setURL("https://www.joincoded.com/")
+        .setAuthor(
+          "COODED " + currentGroup,
+          "https://media-exp1.licdn.com/dms/image/C4D0BAQHLyZXsUy3iaw/company-logo_200_200/0/1543400549551?e=2159024400&v=beta&t=7eYjtPJHw3cORsm2jWJNWQ3Ee9EpZG0VmLsPgODpvAA",
+          "https://www.joincoded.com/"
+        )
+        .setThumbnail(
+          "https://media-exp1.licdn.com/dms/image/C4D0BAQHLyZXsUy3iaw/company-logo_200_200/0/1543400549551?e=2159024400&v=beta&t=7eYjtPJHw3cORsm2jWJNWQ3Ee9EpZG0VmLsPgODpvAA"
+        )
+        .setImage(
+          "https://media-exp1.licdn.com/dms/image/C4D0BAQHLyZXsUy3iaw/company-logo_200_200/0/1543400549551?e=2159024400&v=beta&t=7eYjtPJHw3cORsm2jWJNWQ3Ee9EpZG0VmLsPgODpvAA"
+        )
+        .setTimestamp()
+        .attachFiles(["./image.png"])
+        .setImage("attachment://image.png");
+      return msg.reply(exampleEmbed);
+    });
+    //return msg.reply(currentInstructor);
 
     //console.log(pairsMap);
     // return `\`\`\` Pair ${i}: ${pair[0]} ${
@@ -393,31 +504,31 @@ client.on('message', async (msg) => {
 });
 
 // creating Iod
-client.on('message', async (msg) => {
+client.on("message", async (msg) => {
   if (msg.author.bot) return;
 
-  if (msg.content.includes('!iod')) {
+  if (msg.content.includes("!iod")) {
     let thArray = [];
     let tableBody = [];
-    let exculdeNames = msg.content.split('!iod ')[1]
-      ? msg.content.split('!iod ')[1].split(',')
+    let exculdeNames = msg.content.split("!iod ")[1]
+      ? msg.content.split("!iod ")[1].split(",")
       : [];
 
     let currentNames = await Names.findAll({
       where: {
-        type: 'student',
+        type: "student",
         group: currentGroup,
       },
       order: sequelize.random(),
     });
     let instructors = await Names.findAll({
       where: {
-        type: 'instructors',
+        type: "instructors",
         group: currentGroup,
       },
       order: sequelize.random(),
     });
-    let result = '';
+    let result = "";
     console.log(+currentNames[0].prevI, instructors.length);
     instructors1 = instructors.filter((a) => !exculdeNames.includes(a.name));
 
@@ -457,7 +568,7 @@ client.on('message', async (msg) => {
         if (CurrentShift) {
           await Names.update(
             {
-              prevI: iod[key].map((a) => a[1]).join(','),
+              prevI: iod[key].map((a) => a[1]).join(","),
             },
             {
               where: {
@@ -470,11 +581,11 @@ client.on('message', async (msg) => {
           .map((a) => a[0])
           .filter((a) => !exculdeNames.includes(a));
 
-        if (iod[key].length !== max) iod[key].push('');
+        if (iod[key].length !== max) iod[key].push("");
 
-        result += '```' + iodName[key] + '\n';
-        result += iod[key].join('\n');
-        result += '```';
+        result += "```" + iodName[key] + "\n";
+        result += iod[key].join("\n");
+        result += "```";
         thArray.push(iodName[key]);
         let count = 0;
         iod[key].forEach((studentName) => {
@@ -486,17 +597,17 @@ client.on('message', async (msg) => {
         { prevI: CurrentShift ? 1 : +currentNames[0].prevI },
         {
           where: {
-            type: 'student',
+            type: "student",
             group: currentGroup,
           },
         }
       );
 
-      thArray = thArray.map((a) => '<td>' + a.split(' ')[0] + '</td>');
-      tableBody = tableBody.map((a) => '<td>' + a.join('</td><td>') + '</td>');
+      thArray = thArray.map((a) => "<td>" + a.split(" ")[0] + "</td>");
+      tableBody = tableBody.map((a) => "<td>" + a.join("</td><td>") + "</td>");
 
       nodeHtmlToImage({
-        output: './image.png',
+        output: "./image.png",
         html: `<html>
       <head>
         <style>
@@ -543,12 +654,12 @@ client.on('message', async (msg) => {
       <table class="styled-table">
       <thead>
         <tr>
-        ${thArray.join('')}
+        ${thArray.join("")}
         </tr>
         </thead>
         <tbody>
         <tr>
-        ${tableBody.join('</tr><tr>')}
+        ${tableBody.join("</tr><tr>")}
         </tr>
         </tbody>
       </table>
@@ -560,23 +671,23 @@ client.on('message', async (msg) => {
       }).then(() => {
         const exampleEmbed = new Discord.MessageEmbed()
 
-          .setColor('#17243D')
-          .setTitle('Instructors of the Day')
-          .setURL('https://www.joincoded.com/')
+          .setColor("#17243D")
+          .setTitle("Instructors of the Day")
+          .setURL("https://www.joincoded.com/")
           .setAuthor(
-            'COODED ' + currentGroup,
-            'https://media-exp1.licdn.com/dms/image/C4D0BAQHLyZXsUy3iaw/company-logo_200_200/0/1543400549551?e=2159024400&v=beta&t=7eYjtPJHw3cORsm2jWJNWQ3Ee9EpZG0VmLsPgODpvAA',
-            'https://www.joincoded.com/'
+            "COODED " + currentGroup,
+            "https://media-exp1.licdn.com/dms/image/C4D0BAQHLyZXsUy3iaw/company-logo_200_200/0/1543400549551?e=2159024400&v=beta&t=7eYjtPJHw3cORsm2jWJNWQ3Ee9EpZG0VmLsPgODpvAA",
+            "https://www.joincoded.com/"
           )
           .setThumbnail(
-            'https://media-exp1.licdn.com/dms/image/C4D0BAQHLyZXsUy3iaw/company-logo_200_200/0/1543400549551?e=2159024400&v=beta&t=7eYjtPJHw3cORsm2jWJNWQ3Ee9EpZG0VmLsPgODpvAA'
+            "https://media-exp1.licdn.com/dms/image/C4D0BAQHLyZXsUy3iaw/company-logo_200_200/0/1543400549551?e=2159024400&v=beta&t=7eYjtPJHw3cORsm2jWJNWQ3Ee9EpZG0VmLsPgODpvAA"
           )
           .setImage(
-            'https://media-exp1.licdn.com/dms/image/C4D0BAQHLyZXsUy3iaw/company-logo_200_200/0/1543400549551?e=2159024400&v=beta&t=7eYjtPJHw3cORsm2jWJNWQ3Ee9EpZG0VmLsPgODpvAA'
+            "https://media-exp1.licdn.com/dms/image/C4D0BAQHLyZXsUy3iaw/company-logo_200_200/0/1543400549551?e=2159024400&v=beta&t=7eYjtPJHw3cORsm2jWJNWQ3Ee9EpZG0VmLsPgODpvAA"
           )
           .setTimestamp()
-          .attachFiles(['./image.png'])
-          .setImage('attachment://image.png');
+          .attachFiles(["./image.png"])
+          .setImage("attachment://image.png");
         return msg.reply(exampleEmbed);
       });
     } else {
@@ -587,13 +698,13 @@ client.on('message', async (msg) => {
       for (let i = 0; i < instructors.length; i++) {
         let temp = +currentNames[0].prevI;
         newiod[instructors[i].name] =
-          instructors[(i + temp) % instructors.length].prevI.split(',');
+          instructors[(i + temp) % instructors.length].prevI.split(",");
       }
       await Names.update(
         { prevI: +currentNames[0].prevI + 1 },
         {
           where: {
-            type: 'student',
+            type: "student",
             group: currentGroup,
           },
         }
@@ -611,24 +722,24 @@ client.on('message', async (msg) => {
         newiod[key] = newiod[key]
           .map((a) => currentNames.find((z) => +z.id === +a).name)
           .filter((a) => !exculdeNames.includes(a));
-        if (newiod[key].length !== max) newiod[key].push('');
+        if (newiod[key].length !== max) newiod[key].push("");
         thArray.push(key);
         count = 0;
         newiod[key].forEach((studentName) => {
           tableBody[count % tableBody.length].push(studentName);
           count++;
         });
-        result += '```' + key + '\n';
-        result += newiod[key].join('\n');
-        result += '```';
+        result += "```" + key + "\n";
+        result += newiod[key].join("\n");
+        result += "```";
       }
       //#009879
 
-      thArray = thArray.map((a) => '<td>' + a.split(' ')[0] + '</td>');
-      tableBody = tableBody.map((a) => '<td>' + a.join('</td><td>') + '</td>');
+      thArray = thArray.map((a) => "<td>" + a.split(" ")[0] + "</td>");
+      tableBody = tableBody.map((a) => "<td>" + a.join("</td><td>") + "</td>");
 
       nodeHtmlToImage({
-        output: './image.png',
+        output: "./image.png",
         html: `<html>
         <head>
           <style>
@@ -675,12 +786,12 @@ client.on('message', async (msg) => {
         <table class="styled-table">
         <thead>
           <tr>
-          ${thArray.join('')}
+          ${thArray.join("")}
           </tr>
           </thead>
           <tbody>
           <tr>
-          ${tableBody.join('</tr><tr>')}
+          ${tableBody.join("</tr><tr>")}
           </tr>
           </tbody>
         </table>
@@ -692,27 +803,26 @@ client.on('message', async (msg) => {
       }).then(() => {
         const exampleEmbed = new Discord.MessageEmbed()
 
-          .setColor('#17243D')
-          .setTitle('Instructors of the Day')
-          .setURL('https://www.joincoded.com/')
+          .setColor("#17243D")
+          .setTitle("Instructors of the Day")
+          .setURL("https://www.joincoded.com/")
           .setAuthor(
-            'COODED ' + currentGroup,
-            'https://media-exp1.licdn.com/dms/image/C4D0BAQHLyZXsUy3iaw/company-logo_200_200/0/1543400549551?e=2159024400&v=beta&t=7eYjtPJHw3cORsm2jWJNWQ3Ee9EpZG0VmLsPgODpvAA',
-            'https://www.joincoded.com/'
+            "COODED " + currentGroup,
+            "https://media-exp1.licdn.com/dms/image/C4D0BAQHLyZXsUy3iaw/company-logo_200_200/0/1543400549551?e=2159024400&v=beta&t=7eYjtPJHw3cORsm2jWJNWQ3Ee9EpZG0VmLsPgODpvAA",
+            "https://www.joincoded.com/"
           )
           .setThumbnail(
-            'https://media-exp1.licdn.com/dms/image/C4D0BAQHLyZXsUy3iaw/company-logo_200_200/0/1543400549551?e=2159024400&v=beta&t=7eYjtPJHw3cORsm2jWJNWQ3Ee9EpZG0VmLsPgODpvAA'
+            "https://media-exp1.licdn.com/dms/image/C4D0BAQHLyZXsUy3iaw/company-logo_200_200/0/1543400549551?e=2159024400&v=beta&t=7eYjtPJHw3cORsm2jWJNWQ3Ee9EpZG0VmLsPgODpvAA"
           )
           .setImage(
-            'https://media-exp1.licdn.com/dms/image/C4D0BAQHLyZXsUy3iaw/company-logo_200_200/0/1543400549551?e=2159024400&v=beta&t=7eYjtPJHw3cORsm2jWJNWQ3Ee9EpZG0VmLsPgODpvAA'
+            "https://media-exp1.licdn.com/dms/image/C4D0BAQHLyZXsUy3iaw/company-logo_200_200/0/1543400549551?e=2159024400&v=beta&t=7eYjtPJHw3cORsm2jWJNWQ3Ee9EpZG0VmLsPgODpvAA"
           )
           .setTimestamp()
-          .attachFiles(['./image.png'])
-          .setImage('attachment://image.png');
+          .attachFiles(["./image.png"])
+          .setImage("attachment://image.png");
         return msg.reply(exampleEmbed);
       });
     }
-    console.log(tableBody);
   }
 });
 client.login(process.env.TOKEN);
