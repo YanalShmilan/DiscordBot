@@ -356,7 +356,7 @@ client.on("message", async (msg) => {
       },
       order: sequelize.random(),
     });
-    console.log(exculdeNames);
+    //console.log(exculdeNames);
     currentInstructor = currentInstructor
       .filter((a) => !exculdeNames.includes(a.name))
       .map((a) => [a.id, a.name, []]);
@@ -417,7 +417,7 @@ client.on("message", async (msg) => {
         <style>
           body {
             width: 700px;
-            height: ${-1 + tableBody.length * 100}px;
+            height: ${-1 + tableBody.length * 90}px;
             background-color:#2F3136;
           }
           .styled-table {
@@ -476,7 +476,7 @@ client.on("message", async (msg) => {
       const exampleEmbed = new Discord.MessageEmbed()
 
         .setColor("#17243D")
-        .setTitle(currentGroup + " Pairs")
+        .setTitle("Pairs")
         .setURL("https://www.joincoded.com/")
         .setAuthor(
           "COODED " + currentGroup,
@@ -529,7 +529,7 @@ client.on("message", async (msg) => {
       order: sequelize.random(),
     });
     let result = "";
-    console.log(+currentNames[0].prevI, instructors.length);
+    //console.log(+currentNames[0].prevI, instructors.length);
     instructors1 = instructors.filter((a) => !exculdeNames.includes(a.name));
 
     if (
