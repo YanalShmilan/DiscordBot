@@ -94,23 +94,25 @@ const client = new Client();
 client.on("ready", () => {
   console.log(`Logged in as ${client.user.tag}!`);
 });
-
-client.on("message", (msg) => {
-  if (msg.content.includes("!setGroup")) {
-    currentGroup = msg.content.split("!setGroup ")[1];
-    msg.reply("Current group now is :" + currentGroup);
+client.on("message", async (msg) => {
+  // if (msg.content.includes("!setGroup")) {
+  //   currentGroup = msg.content.split("!setGroup ")[1];
+  //   msg.reply("Current group now is :" + currentGroup);
+  // }
+  if (msg.author.bot) return;
+  if (msg.channel.name.split("-")[0] === "yanal") {
+    currentGroup = "JO21";
+  } else {
+    currentGroup = msg.channel.name.split("-")[0].toUpperCase();
   }
-  // Attach
-  else if (msg.content === "!wow") {
+
+  console.log(currentGroup);
+  if (msg.content === "!wow") {
     const attachment = new MessageAttachment(
       "https://cdn140.picsart.com/308864669055201.gif?to=min&r=640"
     );
     msg.channel.send(attachment);
-  }
-});
-// easter eggs
-client.on("message", (msg) => {
-  if (msg.content.includes("!laila")) {
+  } else if (msg.content.includes("!laila")) {
     msg.reply("Is the best instructor");
   }
   // Attach
@@ -130,13 +132,7 @@ client.on("message", (msg) => {
     msg.reply("فلاح");
   } else if (msg.content === "!yanal") {
     msg.reply(":hatching_chick:");
-  }
-});
-
-// Help
-client.on("message", (msg) => {
-  if (msg.author.bot) return;
-  if (msg.content === "!helpMe") {
+  } else if (msg.content === "!helpMe") {
     const helpMsg1 = ` \`\`\`  
     Welcome to Ahmad2.0 Discord Bot, made in inhuman conditions under the supervision of Laila A to help you generate 
     Instructor of the day and Pairs for your students. \n \`\`\`  `;
@@ -194,75 +190,30 @@ client.on("message", (msg) => {
     msg.channel.send(helpMsg5);
 
     return msg.channel.send(helpMsg6);
-  }
-  return;
-});
-
-// adding a student
-client.on("message", (msg) => {
-  if (msg.author.bot) return;
-
-  if (msg.content.includes("!addStudent")) {
+  } else if (msg.content.includes("!addStudent")) {
     const name = msg.content.split("!addStudent ")[1];
     add(name, "student");
     return msg.reply(`Student ${name} added.`);
-  }
-});
-// adding an instructor
-client.on("message", (msg) => {
-  if (msg.author.bot) return;
-
-  if (msg.content.includes("!addInstructor")) {
+  } else if (msg.content.includes("!addInstructor")) {
     const name = msg.content.split("!addInstructor ")[1];
     add(name, "instructors");
     return msg.reply(`Instructor ${name} Added`);
-  }
-});
-// adding list of Students
-client.on("message", (msg) => {
-  if (msg.author.bot) return;
-
-  if (msg.content.includes("!bulkStudents")) {
+  } else if (msg.content.includes("!bulkStudents")) {
     const names = msg.content.split("!bulkStudents ")[1];
     bulkAdd(names, "student");
     return msg.reply(`Students added.`);
-  }
-});
-// adding list of Instructors
-client.on("message", (msg) => {
-  if (msg.author.bot) return;
-
-  if (msg.content.includes("!bulkInstructors")) {
+  } else if (msg.content.includes("!bulkInstructors")) {
     const names = msg.content.split("!bulkInstructors ")[1];
     bulkAdd(names, "instructors");
     return msg.reply(`Instructors added.`);
-  }
-});
-
-// clearing the db
-client.on("message", (msg) => {
-  if (msg.author.bot) return;
-
-  if (msg.content.includes("!clearDb")) {
+  } else if (msg.content.includes("!clearDb")) {
     Names.sync({ force: true });
     return msg.reply(`Names cleard.`);
-  }
-});
-
-// deleting a name
-client.on("message", (msg) => {
-  if (msg.author.bot) return;
-
-  if (msg.content.includes("!removeName")) {
+  } else if (msg.content.includes("!removeName")) {
     const name = msg.content.split("!removeName ")[1];
     del(name);
     return msg.reply(`Name ${name} deleted.`);
-  }
-});
-client.on("message", (msg) => {
-  if (msg.author.bot) return;
-
-  if (msg.content.includes("!imagetest")) {
+  } else if (msg.content.includes("!imagetest")) {
     nodeHtmlToImage({
       output: "./image.png",
       html: `<html>
@@ -288,28 +239,14 @@ client.on("message", (msg) => {
       console.log("The image was created successfully!");
       msg.reply(new MessageAttachment("./image.png"));
     });
-
     return;
-  }
-});
-// listing names
-client.on("message", async (msg) => {
-  if (msg.author.bot) return;
-
-  if (msg.content.includes("!listNames")) {
+  } else if (msg.content.includes("!listNames")) {
     let names = await Names.findAll({
       attributes: ["name"],
     });
     names = names.map((name) => name.name);
     return msg.reply(`Names: ${names.toString()}.`);
-  }
-});
-
-// creating pairs
-client.on("message", async (msg) => {
-  if (msg.author.bot) return;
-
-  if (msg.content.includes("!pairs")) {
+  } else if (msg.content.includes("!pairs")) {
     let exculdeNames = msg.content.split("!pairs ")[1]
       ? msg.content.split("!pairs ")[1].split(",")
       : [];
@@ -385,7 +322,7 @@ client.on("message", async (msg) => {
             ? fakecounter++
               ? ""
               : ""
-            : "<small style='color:grey'>(" +
+            : "<small style='color:grey'>Pair (" +
               (counter - fakecounter) +
               ")</small> " +
               "<br> " +
@@ -500,14 +437,7 @@ client.on("message", async (msg) => {
     // return `\`\`\` Pair ${i}: ${pair[0]} ${
     //   pair[1] ? `- ${pair[1]}` : ""
     // } \`\`\``;
-  }
-});
-
-// creating Iod
-client.on("message", async (msg) => {
-  if (msg.author.bot) return;
-
-  if (msg.content.includes("!iod")) {
+  } else if (msg.content.includes("!iod")) {
     let thArray = [];
     let tableBody = [];
     let exculdeNames = msg.content.split("!iod ")[1]
@@ -824,5 +754,8 @@ client.on("message", async (msg) => {
       });
     }
   }
+});
+client.on("message", async (msg) => {
+  if (msg.author.bot) return;
 });
 client.login(process.env.TOKEN);
