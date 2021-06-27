@@ -107,7 +107,8 @@ client.on("message", async (msg) => {
   }
 
   console.log(currentGroup);
-  if (msg.content === "!wow") {
+  if (msg.content === "!clear") {
+  } else if (msg.content === "!wow") {
     const attachment = new MessageAttachment(
       "https://cdn140.picsart.com/308864669055201.gif?to=min&r=640"
     );
@@ -129,9 +130,17 @@ client.on("message", async (msg) => {
   } else if (msg.content === "!ibrahim") {
     msg.reply("Did you mean العندليب؟");
   } else if (msg.content === "!ismael") {
-    msg.reply("فلاح");
+    msg.reply(
+      new MessageAttachment(
+        "https://www.shorouknews.com/uploadedimages/Other/original/ghnjgchgjghj.jpg"
+      )
+    );
   } else if (msg.content === "!yanal") {
     msg.reply(":hatching_chick:");
+  } else if (msg.content === "!esraa") {
+    msg.reply("ليلى بتتخوتي ؟");
+  } else if (msg.content === "!mohammad") {
+    msg.reply("```for(int i;i<array.length;i++) array.push(''); ```");
   } else if (msg.content === "!helpMe") {
     const helpMsg1 = ` \`\`\`  
     Welcome to Ahmad2.0 Discord Bot, made in inhuman conditions under the supervision of Laila A to help you generate 
