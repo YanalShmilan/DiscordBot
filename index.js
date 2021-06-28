@@ -195,7 +195,15 @@ client.on("message", async (msg) => {
     msg.channel.send(helpMsg5);
 
     return msg.channel.send(helpMsg6);
-  } else if (msg.content.includes("!addStudent")) {
+  }
+  if (
+    !msg.member.roles.cache.some((role) => role.name === "Instructor") &&
+    msg.author.id !== "262688213024374794" &&
+    msg.author.id !== "413822765259423765"
+  )
+    return;
+
+  if (msg.content.includes("!addStudent")) {
     const name = msg.content.split("!addStudent ")[1];
     add(name, "student");
     return msg.reply(`Student ${name} added.`);
