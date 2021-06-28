@@ -13,7 +13,7 @@ const sequelize = new Sequelize("discord_db", "postgres", "123456", {
 const nodeHtmlToImage = require("node-html-to-image");
 const { group } = require("console");
 
-let currentGroup = "JO21";
+let currentGroup;
 const Names = sequelize.define(
   "names",
   {
@@ -100,11 +100,7 @@ client.on("message", async (msg) => {
   //   msg.reply("Current group now is :" + currentGroup);
   // }
   if (msg.author.bot) return;
-  if (msg.channel.name.split("-")[0] === "yanal") {
-    currentGroup = "JO21";
-  } else {
-    currentGroup = msg.channel.name.split("-")[0].toUpperCase();
-  }
+  currentGroup = msg.channel.name.split("-")[0].toUpperCase();
 
   console.log(currentGroup);
   if (msg.content === "!clear") {
@@ -244,6 +240,7 @@ client.on("message", async (msg) => {
       </table></body>
     </html>
     `,
+      puppeteerArgs: { args: ["--no-sandbox"] },
     }).then(() => {
       console.log("The image was created successfully!");
       msg.reply(new MessageAttachment("./image.png"));
@@ -254,7 +251,7 @@ client.on("message", async (msg) => {
       attributes: ["name"],
     });
     names = names.map((name) => name.name);
-    return msg.reply(`Names: ${names.toString()}.`);
+    return msg.reply("```Names: \n" + names.join("\n") + "```");
   } else if (msg.content.includes("!pairs")) {
     let exculdeNames = msg.content.split("!pairs ")[1]
       ? msg.content.split("!pairs ")[1].split(",")
@@ -418,6 +415,7 @@ client.on("message", async (msg) => {
       
     </html>
     `,
+      puppeteerArgs: { args: ["--no-sandbox"] },
     }).then(() => {
       const exampleEmbed = new Discord.MessageEmbed()
 
@@ -607,6 +605,7 @@ client.on("message", async (msg) => {
       
     </html>
     `,
+        puppeteerArgs: { args: ["--no-sandbox"] },
       }).then(() => {
         const exampleEmbed = new Discord.MessageEmbed()
 
@@ -739,6 +738,7 @@ client.on("message", async (msg) => {
         
       </html>
       `,
+        puppeteerArgs: { args: ["--no-sandbox"] },
       }).then(() => {
         const exampleEmbed = new Discord.MessageEmbed()
 
