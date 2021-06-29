@@ -3,6 +3,9 @@ var http = require("http");
 var fs = require("fs");
 const dotenv = require("dotenv").config();
 const Sequelize = require("sequelize");
+const Op = Sequelize.Op;
+var emojiStrip = require("emoji-strip");
+
 const { Client, MessageAttachment } = require("discord.js");
 const sequelize = new Sequelize("discord_db", "postgres", "123456", {
   host: "127.0.0.1",
@@ -100,7 +103,7 @@ client.on("message", async (msg) => {
   //   msg.reply("Current group now is :" + currentGroup);
   // }
   if (msg.author.bot) return;
-  currentGroup = msg.channel.name.split("-")[0].toUpperCase();
+  currentGroup = emojiStrip(msg.channel.name.split("-")[0].toUpperCase());
 
   console.log(currentGroup);
   if (msg.content === "!clear") {
@@ -369,6 +372,180 @@ client.on("message", async (msg) => {
           body {
             width: 700px;
             height: ${-1 + tableBody.length * 90}px;
+            background-color:#2F3136;
+          }
+          .styled-table {
+            border-collapse: collapse;
+            margin: 25px 0;
+            font-size: 0.9em;
+            font-family: sans-serif;
+            width: 700px;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.15);
+            background-color:#FFFFFF;
+        }
+        .styled-table thead tr {
+          background-color: #17243D;
+          color: #ffffff;
+          text-align: left;
+      }
+      .styled-table th,
+.styled-table td {
+  padding: 12px 15px;
+}
+
+          .styled-table tbody tr {
+            border-bottom: 1px solid #dddddd;
+        }
+        
+        .styled-table tbody tr:nth-of-type(even) {
+            background-color: #f3f3f3;
+        }
+        
+        .styled-table tbody tr:last-of-type {
+            border-bottom: 2px solid #17243D;
+        }
+
+        </style>
+      </head>
+      <body>
+      <center>
+      <table class="styled-table">
+      <thead>
+        <tr>
+        ${thArray.join("")}
+        </tr>
+        </thead>
+        <tbody>
+        <tr>
+        ${tableBody.join("</tr><tr>")}
+        </tr>
+        </tbody>
+      </table>
+      </center>
+      </body>
+      
+    </html>
+    `,
+      puppeteerArgs: { args: ["--no-sandbox"] },
+    }).then(() => {
+      const exampleEmbed = new Discord.MessageEmbed()
+
+        .setColor("#17243D")
+        .setTitle("Pairs")
+        .setURL("https://www.joincoded.com/")
+        .setAuthor(
+          "COODED " + currentGroup,
+          "https://media-exp1.licdn.com/dms/image/C4D0BAQHLyZXsUy3iaw/company-logo_200_200/0/1543400549551?e=2159024400&v=beta&t=7eYjtPJHw3cORsm2jWJNWQ3Ee9EpZG0VmLsPgODpvAA",
+          "https://www.joincoded.com/"
+        )
+        .setThumbnail(
+          "https://media-exp1.licdn.com/dms/image/C4D0BAQHLyZXsUy3iaw/company-logo_200_200/0/1543400549551?e=2159024400&v=beta&t=7eYjtPJHw3cORsm2jWJNWQ3Ee9EpZG0VmLsPgODpvAA"
+        )
+        .setImage(
+          "https://media-exp1.licdn.com/dms/image/C4D0BAQHLyZXsUy3iaw/company-logo_200_200/0/1543400549551?e=2159024400&v=beta&t=7eYjtPJHw3cORsm2jWJNWQ3Ee9EpZG0VmLsPgODpvAA"
+        )
+        .setTimestamp()
+        .attachFiles(["./image.png"])
+        .setImage("attachment://image.png");
+      return msg.reply(exampleEmbed);
+    });
+    //return msg.reply(currentInstructor);
+
+    //console.log(pairsMap);
+    // return `\`\`\` Pair ${i}: ${pair[0]} ${
+    //   pair[1] ? `- ${pair[1]}` : ""
+    // } \`\`\``;
+  } else if (msg.content.includes("!mypairs")) {
+    let currentNames = await Names.findAll({
+      where: {
+        type: "student",
+        group: currentGroup,
+      },
+      order: [["id"]],
+    });
+    const FindName = (myname) => {
+      let currentName = currentNames.find((a) =>
+        a.name.toLowerCase().startsWith(myname.toLowerCase())
+      );
+      if (currentName) return currentName.name;
+      else return myname + "*";
+    };
+    let exculdeNames = [];
+    pairs = msg.content.split("!mypairs ")[1]
+      ? msg.content.split("!mypairs ")[1].split(",")
+      : [];
+    pairs = [...new Set(pairs)];
+    let currentInstructor = await Names.findAll({
+      where: {
+        type: "instructors",
+        group: currentGroup,
+      },
+      order: sequelize.random(),
+    });
+    //console.log(exculdeNames);
+    currentInstructor = currentInstructor
+      .filter((a) => !exculdeNames.includes(a.name))
+      .map((a) => [a.id, a.name, []]);
+    for (let i = 0; i < pairs.length; i++) {
+      currentInstructor[i % currentInstructor.length][2].push(pairs[i]);
+    }
+    currentInstructor.sort((a, b) => a[0] - b[0]);
+    let counter = 1;
+    let thArray = [];
+    let tableBody = [];
+    for (let i = 0; i < pairs.length / currentInstructor.length; i++) {
+      tableBody.push([]);
+    }
+    let max = 0;
+    for (let i = 0; i < currentInstructor.length; i++) {
+      max = Math.max(currentInstructor[i][2].length, max);
+    }
+    let fakecounter = 0;
+    currentInstructor = currentInstructor.map((array) => {
+      let string = "```" + array[1] + "\n";
+      if (array[2].length < max) array[2].push("");
+      thArray.push(array[1]);
+      array[2].forEach((pair) => {
+        tableBody[(counter - 1) % tableBody.length].push(
+          (pair === ""
+            ? fakecounter++
+              ? ""
+              : ""
+            : "<small style='color:grey'>Pair (" +
+              (counter - fakecounter) +
+              ")</small> " +
+              "<br> " +
+              FindName(pair.split("-")[0])) +
+            (pair.split("-")[1] === undefined
+              ? "<br>"
+              : " <br> " + FindName(pair.split("-")[1]))
+        );
+        // string +=
+        //   "Pair " +
+        //   counter +
+        //   ": " +
+        //   (pair === "" ? "" : currentNames[+pair.split("-")[0]].name) +
+        //   (currentNames[+pair.split("-")[1]] === undefined
+        //     ? ""
+        //     : " - " + currentNames[+pair.split("-")[1]].name) +
+        //   "\n";
+        counter++;
+      });
+      string += "```";
+      return string;
+    });
+    thArray = thArray.map((a) => "<td>" + a.split(" ")[0] + "</td>");
+    tableBody = tableBody.map((a) => "<td>" + a.join("</td><td>") + "</td>");
+    nodeHtmlToImage({
+      output: "./image.png",
+      html: `<html>
+      <head>
+        <style>
+          body {
+            width: 700px;
+            height: ${
+              (tableBody.length === 1 ? 30 : 10) + tableBody.length * 90
+            }px;
             background-color:#2F3136;
           }
           .styled-table {
