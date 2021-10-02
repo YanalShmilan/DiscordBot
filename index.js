@@ -15,7 +15,15 @@ var emojiStrip = require('emoji-strip');
 var pg = require('pg');
 pg.defaults.ssl = true;
 const { Client, MessageAttachment } = require('discord.js');
-const sequelize = new Sequelize(process.env.DATABASE_URL); // Example for postgres
+const sequelize = new Sequelize(process.env.DATABASE_URL, {
+  dialect: 'postgres',
+  dialectOptions: {
+    ssl: {
+      require: true,
+      rejectUnauthorized: false, // <<<<<<< YOU NEED THIS
+    },
+  },
+}); // Example for postgres
 
 const nodeHtmlToImage = require('node-html-to-image');
 const { group } = require('console');
