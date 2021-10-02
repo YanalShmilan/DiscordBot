@@ -2,10 +2,14 @@ const Discord = require('discord.js');
 const express = require('express');
 const cors = require('cors');
 const app = express();
+const puppeteer = require('puppeteer');
 app.use(cors());
 app.use(express.json());
 app.listen(process.env.PORT || 5000);
-
+const browser = await puppeteer.launch({
+  headless: true,
+  args: ['--no-sandbox', '--disable-setuid-sandbox'],
+});
 var http = require('http');
 var fs = require('fs');
 const dotenv = require('dotenv').config();
