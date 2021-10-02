@@ -5,7 +5,8 @@ const dotenv = require('dotenv').config();
 const Sequelize = require('sequelize');
 const Op = Sequelize.Op;
 var emojiStrip = require('emoji-strip');
-
+var pg = require('pg');
+pg.defaults.ssl = true;
 const { Client, MessageAttachment } = require('discord.js');
 const sequelize = new Sequelize(process.env.DATABASE_URL); // Example for postgres
 
