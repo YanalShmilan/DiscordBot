@@ -1,4 +1,11 @@
 const Discord = require('discord.js');
+const express = require('express');
+const cors = require('cors');
+const app = express();
+app.use(cors());
+app.use(express.json());
+app.listen(process.env.PORT || 5000);
+
 var http = require('http');
 var fs = require('fs');
 const dotenv = require('dotenv').config();
