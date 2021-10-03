@@ -12,6 +12,14 @@ app.listen(process.env.PORT || 5000);
     args: ['--no-sandbox', '--disable-setuid-sandbox'],
   });
 })();
+
+var reqTimer = setTimeout(function wakeUp() {
+  request('https://discord-coded.herokuapp.com', function () {
+    console.log('WAKE UP DYNO');
+  });
+  return (reqTimer = setTimeout(wakeUp, 1200000));
+}, 1200000);
+
 var http = require('http');
 var fs = require('fs');
 const dotenv = require('dotenv').config();
